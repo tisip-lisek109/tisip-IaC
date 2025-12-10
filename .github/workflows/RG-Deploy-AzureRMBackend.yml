@@ -51,7 +51,7 @@ jobs:
           RG_NAME=$(az keyvault secret show --vault-name "$KV" --name rg-name-modul06   --query value -o tsv)
           LOCATION=$(az keyvault secret show --vault-name "$KV" --name rg-tfvars --query value -o tsv)
           {
-            echo "TF_VAR_rg_name=$RG_NAME"
+            echo "TF_VAR_rgname=$RG_NAME"
             echo "TF_VAR_location=$LOCATION"
           } >> "$GITHUB_ENV"
 
