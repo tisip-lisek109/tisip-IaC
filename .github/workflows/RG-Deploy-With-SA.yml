@@ -5,10 +5,9 @@ on:
     branches:
       - dev
       - prod
-<<<<<<< HEAD
+
   workflow_dispatch: {}
-=======
->>>>>>> b3d9b05eea172dccd9483e4b81d4f15b6ea7b57d
+
 
 permissions:
   id-token: write
