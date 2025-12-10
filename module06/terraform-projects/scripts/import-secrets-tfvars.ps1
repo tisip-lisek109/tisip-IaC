@@ -1,12 +1,12 @@
 # Parametere
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$KeyVaultName,
     
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$TfvarsFilePath,
     
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$SecretName
 )
 
@@ -19,4 +19,4 @@ az keyvault secret set `
     --name $SecretName `
     --value $fileContent
 
-Write-Host "✓ Hele filen '$TfvarsFilePath' er lagret som secret '$SecretName' i Key Vault '$KeyVaultName'"
+#Write-Host "✓ Hele filen '$TfvarsFilePath' er lagret som secret '$SecretName' i Key Vault '$KeyVaultName'"

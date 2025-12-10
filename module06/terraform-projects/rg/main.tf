@@ -1,7 +1,8 @@
 terraform {
+  backend "azurerm" {}
   required_providers {
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = "~> 4.40.0"
     }
   }
@@ -12,6 +13,6 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "fd-rg" {
-  name     = "rg-demo-sf34123"
-  location = "West Europe"
+  name     = var.rgname
+  location = var.location
 }
