@@ -32,7 +32,7 @@ resource "azurerm_storage_account" "main" {
     Environment = var.environment
     ManagedBy   = "Terraform"
     Owner       = "Tom Lis"
-    TestValue   = "AnotherTest"
+    TestValue   = "Test"
   }
 }
 
