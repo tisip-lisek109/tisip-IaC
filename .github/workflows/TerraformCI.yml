@@ -60,7 +60,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
-            -backend-config="key=projects/storageaccount/dev/dev.tfstate" \
+            -backend-config="key=LearnIaC/env/dev/dev.tfstate" \
             -input=false \
             -no-color
       
@@ -115,7 +115,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
-            -backend-config="key=projects/storageaccount/${{ matrix.environment }}/${{ matrix.environment }}.tfstate" \
+            -backend-config="key=LearnIaC/env/${{ matrix.environment }}/${{ matrix.environment }}.tfstate" \
             -input=false \
             -no-color
       
