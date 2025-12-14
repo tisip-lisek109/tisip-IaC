@@ -5,7 +5,7 @@ on:
     branches: 
       - main
     paths:
-      - "module07/buildOnce-deployMany/deploymentScript/simple-terraform/**"
+      - "module07/buildOnce-deployMany/simple-terraform/**"
 
 permissions:
   id-token: write
@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      WORKDIR: "module07/buildOnce-deployMany/deploymentScript/simple-terraform"
-      BACKEND_HCL: "module07/buildOnce-deployMany/deploymentScript/simple-terraform/shared/backend.hcl"
+      WORKDIR: "module07/buildOnce-deployMany/simple-terraform/**"
+      BACKEND_HCL: "module07/buildOnce-deployMany/simple-terraform/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       
@@ -75,8 +75,8 @@ jobs:
     needs: validate
     environment: ${{ matrix.environment }}
     env:
-      WORKDIR: "module07/buildOnce-deployMany/deploymentScript/simple-terraform"
-      BACKEND_HCL: "module07/buildOnce-deployMany/deploymentScript/simple-terraform/shared/backend.hcl"
+      WORKDIR: "module07/buildOnce-deployMany/simple-terraform/**"
+      BACKEND_HCL: "module07/buildOnce-deployMany/simple-terraform/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
     
