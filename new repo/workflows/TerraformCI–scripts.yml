@@ -1,0 +1,83 @@
+name: Terraform CI – scripts
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "course materials/module08/demo01/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  security-events: write   # nødvendig for å laste opp SARIF (annotasjoner i PR)
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      WORKDIR: "course materials/module08/demo01"
+      BACKEND_HCL: "course materials/module08/demo01/shared/backend.hcl"
+      STATE_KEY: "project/demo01/terraform.tfstate"
+      TF_INPUT: "false"
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make testscripts executable
+        working-directory: ${{ env.WORKDIR }}/testscript
+        run: |
+          echo "Gir kjørbar rettighet til alle .sh-filer:"
+          chmod -v +x *.sh
+          echo
+          echo "Bekreftede rettigheter etter endring:"
+          ls -l *.sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+          terraform_wrapper: false
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Export ARM_* for Terraform (OIDC)
+        run: |
+          {
+            echo "ARM_USE_OIDC=true"
+            echo "ARM_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}"
+            echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+            echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          } >> "$GITHUB_ENV"
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6.2.1
+        with:
+          tflint_version: latest
+
+      - name: TFLint (script)
+        working-directory: ${{ env.WORKDIR }}/testscript
+        run: |
+          ./tflint_run.sh "${{ env.WORKDIR }}"
+
+      - name: Setup Python and Checkov
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y python3-pip
+          pip install --upgrade pip
+          pip install checkov
+
+      - name: Checkov scan (script)
+        continue-on-error: true
+        working-directory: ${{ env.WORKDIR }}/testscript
+        run: |
+          ./checkov_scan.sh "${{ env.WORKDIR }}"

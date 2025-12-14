@@ -1,0 +1,64 @@
+name: terraform-dev
+on:
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.x
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Hent tfvars-innhold fra Key Vault med Azure CLI (unngår deprecated set-output)
+      - name: Fetch tfvars from Key Vault
+        env:
+          KEYVAULT_NAME: ${{ secrets.KEYVAULT_NAME }}
+        run: |
+          set -euo pipefail
+          # Hent ren verdi (kan være uten eller med anførselstegn)
+          VALUE="$(az keyvault secret show --vault-name "$KEYVAULT_NAME" --name tfvars-dev --query value -o tsv)"
+
+          # Normaliser: legg til " rundt strengverdier hvis de mangler.
+          # Forventer linjer på form: key = value
+          printf "%s\n" "$VALUE" \
+          | awk -F'=' '
+              BEGIN{OFS=" = "}
+              {
+                key=$1; val=$2
+                gsub(/^[ \t]+|[ \t]+$/,"",key)
+                gsub(/^[ \t]+|[ \t]+$/,"",val)
+                # Hvis val ikke starter/slutter med ", legg til
+                if (val !~ /^".*"$/) { val="\"" val "\"" }
+                print key, val
+              }
+            ' > "course materials/module06/terraform-projects/environments/dev/terraform.tfvars"
+
+      - name: Terraform Init
+        working-directory: "course materials/module06/terraform-projects/environments/dev"
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        working-directory: "course materials/module06/terraform-projects/environments/dev"
+        run: terraform plan -input=false -var-file=terraform.tfvars
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: "course materials/module06/terraform-projects/environments/dev"
+        run: terraform apply -auto-approve -input=false -var-file=terraform.tfvars
